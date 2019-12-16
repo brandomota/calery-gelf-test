@@ -1,0 +1,16 @@
+version: '3.1'
+
+services:
+   redis:
+      image: redis
+      restart: unless-stopped
+      ports:
+        - 6379:6379
+   app:
+      image: brandomota/celery-graylog-test
+      depends_on:
+         - redis
+
+      ports:
+        - 8000:8000
+

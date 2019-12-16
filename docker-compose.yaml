@@ -1,0 +1,42 @@
+version: '3.1'
+
+services:
+    mongodb:
+        image: mongo
+        restart: unless-stopped
+        environment: 
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: root
+            MONGO_INITDB_DATABASE: graylog
+        ports: 
+            - 8081:8081
+            - 27017:27017
+        volumes: 
+            - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+        
+    elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:5.6.2
+        restart: unless-stopped
+        environment: 
+            http.host: "0.0.0.0"
+            xpack.security.enabled: "false"
+            discovery.type: "single-node"
+        ports:
+            - 9200:9200
+            - 9300:9300
+
+    graylog:
+        image: graylog/graylog:3.1
+        restart: unless-stopped
+        environment: 
+            GRAYLOG_WEB_ENDPOINT_URI: "http://0.0.0.0:9000/api"
+            GRAYLOG_ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
+            GRAYLOG_MONGODB_URI: "mongodb://root:root@mongodb:27017/graylog"
+        ports:
+            - 9000:9000
+            - 12001:12001
+            - 514:514
+            - 514:514/udp
+        depends_on:
+            - elasticsearch
+            - mongodb
